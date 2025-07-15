@@ -1,0 +1,130 @@
+* { box-sizing: border-box; margin: 0; padding: 0 }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f6f9fc;
+  color: #333;
+  padding: 20px;
+}
+header {
+  background-color: #1976d2;
+  color: white;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+header h1 {
+  margin-bottom: 10px;
+  text-align: center;
+}
+.dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+form { margin-top: 20px }
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+input {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-width: 140px;
+}
+button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button[type="submit"]:hover { background: #0f5cb5 }
+
+#searchBox {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  overflow-x: auto;
+  display: block;
+}
+th {
+  background-color: #1976d2;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+tbody tr:hover { background-color: #f1f1f1 }
+
+.delete-btn, .update-btn {
+  padding: 6px 10px;
+  color: white;
+  border: none;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.delete-btn { background-color: #e53935 }
+.delete-btn:hover { background-color: #c62828 }
+.update-btn { background-color: #43a047 }
+.update-btn:hover { background-color: #2e7d32 }
+
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: #fff;
+  padding: 14px 25px;
+  border-radius: 6px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease;
+  z-index: 9999;
+}
+#toast.show { opacity: 1; pointer-events: all }
+#toast.error { background: #e53935 }
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.9em;
+  color: #888;
+}
+
+@media (max-width: 600px) {
+  input, button[type="submit"] { font-size: 0.9rem }
+  th, td { font-size: 0.9rem; padding: 8px }
+  .form-row { flex-direction: column }
+}
