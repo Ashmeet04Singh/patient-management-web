@@ -7,10 +7,9 @@ import os
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
-app.secret_key = "supersecretkey"  # Required for sessions
+app.secret_key = "supersecretkey"
 
-# Dummy user
-USER = {"username": "AshmeetData", "password": "0409Ashmeet*"}
+USER = {"username": "admin", "password": "pass123"}
 
 def get_connection():
     return mysql.connector.connect(
@@ -100,5 +99,13 @@ def add_patient():
     conn.close()
     return jsonify({"message": "Patient added successfully"}), 201
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# ✅ New reset route
+@app.route('/reset-patients', methods=['POST'])
+def reset_patients():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("TRUNCATE TABLE PATIENT_DB")
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect(url_for('home'))
