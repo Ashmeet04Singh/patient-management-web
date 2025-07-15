@@ -1,56 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Patient Management Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-</head>
-<body>
-  <header>
-    <h1>👨‍⚕️ Patient Management System</h1>
-    <div style="text-align: right;">
-      <a href="/logout" style="color: white; font-weight: bold; text-decoration: underline;">🔓 Logout</a>
-    </div>
-  </header>
+window.onload = () => {
+  loadPatients();
+  document.getElementById("patientForm").addEventListener("submit", addPatient);
+  document.getElementById("searchBox").addEventListener("input", filterPatients);
+};
 
-  <main class="dashboard">
-    <section class="card">
-      <h2>➕ Add New Patient</h2>
-      <form id="patientForm">
-        <div class="form-row">
-          <input required type="text" name="P_name" placeholder="Full Name">
-          <input required type="number" name="age" placeholder="Age">
-        </div>
-        <div class="form-row">
-          <input required type="text" name="Disease" placeholder="Disease">
-          <input required type="text" name="Doc_Incharge" placeholder="Doctor In-Charge">
-          <input required type="number" name="fee" placeholder="Fee (₹)">
-        </div>
-        <button type="submit">Add Patient</button>
-      </form>
-    </section>
+let allPatients = [];
 
-    <section class="card">
-      <h2>📋 All Patients</h2>
-      <input type="text" id="searchBox" placeholder="Search by name or disease..." />
-      <table id="patientTable">
-        <thead>
-          <tr>
-            <th>ID</th><th>Name</th><th>Age</th><th>Disease</th>
-            <th>Doctor</th><th>Fee (₹)</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-  </main>
+function addPatient(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
 
-  <footer><p>🧠 Built by Ashmeet | Flask + MySQL + JS</p></footer>
+  if (!data.P_name || !data.age || !data.Disease || !data.Doc_Incharge || !data.fee) {
+    return toast("❗ Please fill all fields", "error");
+  }
 
-  <div id="toast"></div>
+  data.age = +data.age;
+  data.fee = +data.fee;
 
-  <script src="/static/script.js"></script>
-</body>
-</html>
+  fetch("/patients", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+    .then(res => res.json())
+    .then(res => {
+      toast(res.message || "Patient added!");
+      loadPatients();       // ✅ Refresh list after adding
+      e.target.reset();     // ✅ Clear the form
+    })
+    .catch(err => toast("❌ Error adding patient", "error"));
+}
+
+function loadPatients() {
+  fetch("/patients")
+    .then(res => res.json())
+    .then(data => {
+      allPatients = data;
+      renderPatients(data);
+    });
+}
+
+function renderPatients(data) {
+  const tbody = document.querySelector("#patientTable tbody");
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">No patients found.</td></tr>`;
+    return;
+  }
+
+  data.forEach(p => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p.P_id}</td>
+      <td>${p.P_name}</td>
+      <td>${p.age}</td>
+      <td>${p.Disease}</td>
+      <td>${p.Doc_Incharge}</td>
+      <td>₹${p.fee}</td>
+      <td>
+        <button class="update-btn" onclick="promptUpdate(${p.P_id}, ${p.fee})">Update Fee</button>
+        <button class="delete-btn" onclick="deletePatient(${p.P_id})">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function deletePatient(id) {
+  if (!confirm(`Delete patient ID ${id}?`)) return;
+  fetch(`/patients/${id}`, { method: "DELETE" })
+    .then(res => res.json())
+    .then(res => {
+      toast(res.message || "Deleted");
+      loadPatients();
+    })
+    .catch(() => toast("❌ Error deleting", "error"));
+}
+
+function promptUpdate(id, currentFee) {
+  const fee = prompt(`Current fee: ₹${currentFee}\nEnter new fee:`);
+  if (fee === null) return;
+  const newFee = parseInt(fee);
+  if (isNaN(newFee) || newFee < 0) return toast("Invalid fee entered", "error");
+
+  fetch(`/patients/${id}/fee`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fee: newFee })
+  })
+    .then(res => res.json())
+    .then(res => {
+      toast(res.message || "Fee updated");
+      loadPatients();
+    })
+    .catch(() => toast("❌ Error updating fee", "error"));
+}
+
+function filterPatients() {
+  const search = document.getElementById("searchBox").value.toLowerCase();
+  const filtered = allPatients.filter(p =>
+    p.P_name.toLowerCase().includes(search) ||
+    p.Disease.toLowerCase().includes(search)
+  );
+  renderPatients(filtered);
+}
+
+function toast(msg, type = "") {
+  const toastEl = document.getElementById("toast");
+  toastEl.className = `show ${type}`;
+  toastEl.innerText = msg;
+  setTimeout(() => { toastEl.className = toastEl.className.replace("show", ""); }, 3000);
+}
